@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CineMatch — Movies you’ll love</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<header class="navbar">
+  <div class="nav-left nav-user">
+    <input id="usernameInput" class="user-input" placeholder="Username" maxlength="80" />
+    <button type="button" class="btn-signin" onclick="loginOrCreate()">Sign in</button>
+    <span id="userLabel" class="user-label" aria-live="polite"></span>
+  </div>
+
+  <a class="brand nav-center" href="/" aria-label="CineMatch home">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-text">Cine<span class="brand-accent">Match</span></span>
+  </a>
+
+  <div class="nav-right">
+    <div class="nav-search" id="navSearchWrap">
+      <svg class="nav-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <input
+        id="navSearchInput"
+        type="search"
+        placeholder="Search titles…"
+        autocomplete="off"
+        aria-label="Search movies"
+        aria-controls="searchSuggestions"
+        aria-expanded="false"
+      />
+      <button id="navSearchBtn" type="button" class="nav-search-btn" aria-label="Search">
+        Search
+      </button>
+      <div id="searchSuggestions" class="search-suggestions hidden" role="listbox" aria-label="Suggestions"></div>
+    </div>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero" aria-label="Welcome">
+    <div class="hero-inner">
+      <p class="hero-kicker">Your next watch, picked for you</p>
+      <h1 class="hero-title">Discover films that fit your mood</h1>
+      <p class="hero-sub">Trending picks, top-rated gems, and personalised rows — all in one place.</p>
+      <div class="hero-actions">
+        <button type="button" class="cta-btn" onclick="scrollToRow('rowTrending')">Explore Now</button>
+        <button type="button" class="cta-btn secondary" onclick="document.querySelector('.controls-panel')?.scrollIntoView({behavior:'smooth',block:'start'})">Tune Recommendations</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Netflix-style rows -->
+  <section class="row-block" data-row="trending">
+    <div class="row-head">
+      <div class="row-head-main">
+      <h2 class="row-title">Trending</h2>
+      <p class="row-hint">From TMDB this week</p>
+      </div>
+      <div class="row-nav">
+        <button type="button" class="row-chevron" onclick="scrollRow('rowTrending', -1)" aria-label="Scroll left">‹</button>
+        <button type="button" class="row-chevron" onclick="scrollRow('rowTrending', 1)" aria-label="Scroll right">›</button>
+      </div>
+    </div>
+    <div class="row-scroll" id="rowTrending" data-scroll></div>
+  </section>
+
+  <section class="row-block" data-row="top">
+    <div class="row-head">
+      <div class="row-head-main">
+      <h2 class="row-title">Top rated</h2>
+      <p class="row-hint">Highest audience scores in our catalog</p>
+      </div>
+      <div class="row-nav">
+        <button type="button" class="row-chevron" onclick="scrollRow('rowTopRated', -1)" aria-label="Scroll left">‹</button>
+        <button type="button" class="row-chevron" onclick="scrollRow('rowTopRated', 1)" aria-label="Scroll right">›</button>
+      </div>
+    </div>
+    <div class="row-scroll" id="rowTopRated" data-scroll></div>
+  </section>
+
+  <section class="row-block hidden" id="rowBecauseBlock" data-row="because">
+    <div class="row-head">
+      <div class="row-head-main">
+      <h2 class="row-title">Because you watched</h2>
+      <p class="row-hint">Personal picks from your taste profile</p>
+      </div>
+      <div class="row-nav">
+        <button type="button" class="row-chevron" onclick="scrollRow('rowBecause', -1)" aria-label="Scroll left">‹</button>
+        <button type="button" class="row-chevron" onclick="scrollRow('rowBecause', 1)" aria-label="Scroll right">›</button>
+      </div>
+    </div>
+    <div class="row-scroll" id="rowBecause" data-scroll></div>
+  </section>
+
+  <section class="row-block" id="rowMoodBlock" data-row="mood">
+    <div class="row-head">
+      <div class="row-head-main">
+      <h2 class="row-title">Mood-based picks</h2>
+      <p class="row-hint" id="rowMoodHint">Choose a mood below, then sign in to refresh this row</p>
+      </div>
+      <div class="row-nav">
+        <button type="button" class="row-chevron" onclick="scrollRow('rowMood', -1)" aria-label="Scroll left">‹</button>
+        <button type="button" class="row-chevron" onclick="scrollRow('rowMood', 1)" aria-label="Scroll right">›</button>
+      </div>
+    </div>
+    <div class="row-scroll" id="rowMood" data-scroll></div>
+  </section>
+
+  <!-- Mood + genres + CTA -->
+  <section class="panel card controls-panel">
+    <h2 class="panel-title">Tune your session</h2>
+    <p class="panel-desc">Pick a mood and optional genres, then load a full recommendation set.</p>
+
+    <div class="mood-grid" role="group" aria-label="Mood">
+      <button type="button" class="mood-btn" data-mood="happy"    onclick="selectMood(this)">Happy</button>
+      <button type="button" class="mood-btn" data-mood="excited"  onclick="selectMood(this)">Excited</button>
+      <button type="button" class="mood-btn" data-mood="sad"      onclick="selectMood(this)">Sad</button>
+      <button type="button" class="mood-btn" data-mood="romantic" onclick="selectMood(this)">Romantic</button>
+      <button type="button" class="mood-btn" data-mood="scared"   onclick="selectMood(this)">Scared</button>
+      <button type="button" class="mood-btn" data-mood="curious"  onclick="selectMood(this)">Curious</button>
+      <button type="button" class="mood-btn" data-mood="relaxed"  onclick="selectMood(this)">Relaxed</button>
+      <button type="button" class="mood-btn" data-mood="inspired" onclick="selectMood(this)">Inspired</button>
+    </div>
+
+    <div class="genre-row">
+      <label class="genre-label">Genres (optional)</label>
+      <div class="genre-chips" id="genreChips"></div>
+    </div>
+
+    <button type="button" class="primary-btn" onclick="getRecommendations()">Get recommendations</button>
+  </section>
+
+  <section id="resultsSection" class="hidden">
+    <h2 class="section-title">Your recommendations</h2>
+    <div id="movieGrid" class="movie-grid"></div>
+  </section>
+
+  <section id="searchSection" class="hidden">
+    <h2 class="section-title">Search results</h2>
+    <div id="searchGrid" class="movie-grid"></div>
+  </section>
+
+  <section id="profileSection" class="panel card hidden">
+    <h2 class="panel-title">Your taste profile</h2>
+    <div id="profileContent"></div>
+  </section>
+
+  <section id="historySection" class="hidden">
+    <h2 class="section-title">Recently watched</h2>
+    <div id="historyGrid" class="movie-grid small"></div>
+  </section>
+</main>
+
+<div id="modalOverlay" class="modal-overlay hidden" onclick="closeModal(event)" role="presentation">
+  <div class="modal-card" onclick="event.stopPropagation()" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <button type="button" class="modal-close" onclick="document.getElementById('modalOverlay').classList.add('hidden')" aria-label="Close">✕</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden" role="status"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
